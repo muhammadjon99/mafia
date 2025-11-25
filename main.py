@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 # Bot token — Render.com orqali muhit o'zgaruvchisi sifatida beriladi
 BOT_TOKEN = os.getenv("BOT_TOKEN")
-WEBHOOK_URL = os.getenv("WEBHOOK_URL")  # Masalan: https://your-render-app.onrender.com/webhook
+WEBHOOK_URL = os.getenv("WEBHOOK_URL")  # Masalan: https://your-render-app.onrender.com/webhook  
 
 if not BOT_TOKEN or not WEBHOOK_URL:
     raise ValueError("BOT_TOKEN va WEBHOOK_URL muhit o'zgaruvchilari talab qilinadi.")
@@ -107,6 +107,25 @@ async def end_night_phase(chat_id: int, context: ContextTypes.DEFAULT_TYPE):
 
 
 # --- Buyruqlar ---
+
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    welcome_text = """
+🎭 Mafia o'yini botga xush kelibsiz!
+
+Mavjud buyruqlar:
+/newgame — Yangi o'yin boshlash
+/join — O'yinchi sifatida qo'shilish
+/players — O'yinchilar ro'yxati
+/begin — O'yinni rasman boshlash
+/vote [ism] — Kunduz ovoz berish
+/status — O'yin holatini ko'rish
+/night — Kecha boshlash (admin uchun)
+/day — Kun boshlash (admin uchun)
+
+/start o'yinni boshlash uchun /newgame buyrug'ini yuboring.
+    """
+    await update.message.reply_text(welcome_text)
+
 
 async def newgame(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.effective_chat.id
@@ -337,7 +356,6 @@ async def vote(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if len(candidates) == 1:
             eliminated = candidates[0]
             game["alive"].discard(eliminated)
-            await update.message.reply_chat_action(chat_id=chat_id)
             await update.message.reply_text(f"🗳️ {game['players'][eliminated]} chiqarildi!")
         else:
             await update.message.reply_text("Bir xil ovoz — hech kim chiqarilmadi.")
@@ -412,6 +430,7 @@ async def telegram_webhook(request: Request):
 
 # --- Handlerlarni ro'yxatdan o'tkazish ---
 
+application.add_handler(CommandHandler("start", start))
 application.add_handler(CommandHandler("newgame", newgame))
 application.add_handler(CommandHandler("join", join))
 application.add_handler(CommandHandler("players", players))
